@@ -5,7 +5,7 @@ import { Plan2D } from './components/Plan2D';
 import { Scene3D } from './components/Scene3D';
 import { ARView } from './ar/ARView';
 import { api } from './api/client';
-import { migrate } from './model/store';
+import { migrate, sampleProject } from './model/store';
 import type { Project } from './model/types';
 
 /** `/?ar=<token>` opens the read-only phone/AR viewer for a shared project. */
@@ -13,6 +13,8 @@ function ARRoute({ token }: { token: string }) {
   const [project, setProject] = useState<Project | null>(null);
   const [error, setError] = useState('');
   useEffect(() => {
+    // `demo` needs no backend — lets the AR viewer be tried from a static host (GitHub Pages).
+    if (token === 'demo') { setProject(sampleProject()); return; }
     api.getShared(token).then((r) => setProject(migrate(r.data))).catch((e) => setError(String(e)));
   }, [token]);
   if (error) return <div className="ar-page"><p className="ar-note warn">Could not load this project: {error}</p></div>;

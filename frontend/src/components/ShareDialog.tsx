@@ -16,7 +16,7 @@ export function ShareDialog({ onClose }: { onClose(): void }) {
     if (!api.isLoggedIn()) { setError('Log in and save the project first — the phone loads it from the server.'); return; }
     if (!remoteId) { setError('Save the project first — the phone loads it from the server.'); return; }
     api.shareProject(remoteId)
-      .then(({ token }) => setLink(`${location.origin}/?ar=${encodeURIComponent(token)}`))
+      .then(({ token }) => setLink(`${location.origin}${import.meta.env.BASE_URL}?ar=${encodeURIComponent(token)}`))
       .catch((e) => setError(String(e)));
   }, [remoteId]);
 
