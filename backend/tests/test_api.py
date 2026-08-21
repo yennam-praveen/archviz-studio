@@ -56,3 +56,27 @@ def test_projects_are_private(client):
 
 def test_requires_auth(client):
     assert client.get("/projects").status_code == 401
+
+
+def test_share_link(client):
+    h = _auth(client)
+    doc = {"id": "x", "name": "House", "units": "m", "levels": []}
+    pid = client.post("/projects", json={"name": "House", "data": doc}, headers=h).json()["id"]
+
+    token = client.post(f"/projects/{pid}/share", headers=h).json()["token"]
+    assert len(token) >= 24
+    # Sharing again returns the same token.
+    assert client.post(f"/projects/{pid}/share", headers=h).json()["token"] == token
+
+    # Public read without auth.
+    r = client.get(f"/shared/{token}")
+    assert r.status_code == 200 and r.json()["data"] == doc
+
+    # Other users cannot create share links for it.
+    h2 = _auth(client, "two@example.com")
+    assert client.post(f"/projects/{pid}/share", headers=h2).status_code == 404
+
+    # Revoke.
+    assert client.delete(f"/projects/{pid}/share", headers=h).status_code == 204
+    assert client.get(f"/shared/{token}").status_code == 404
+    assert client.get("/shared/not-a-token").status_code == 404

@@ -50,4 +50,7 @@ export const api = {
   updateProject: (id: string, p: Project) =>
     req<void>(`/projects/${id}`, { method: 'PUT', body: JSON.stringify({ name: p.name, data: p }) }),
   deleteProject: (id: string) => req<void>(`/projects/${id}`, { method: 'DELETE' }),
+  shareProject: (id: string) => req<{ token: string }>(`/projects/${id}/share`, { method: 'POST' }),
+  unshareProject: (id: string) => req<void>(`/projects/${id}/share`, { method: 'DELETE' }),
+  getShared: (token: string) => req<{ id: string; name: string; data: Project }>(`/shared/${encodeURIComponent(token)}`),
 };

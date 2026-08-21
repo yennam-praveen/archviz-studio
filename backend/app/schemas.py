@@ -34,3 +34,7 @@ class ProjectSummary(BaseModel):
 
 class ProjectOut(ProjectSummary):
     data: dict[str, Any]
+
+
+class ShareOut(BaseModel):
+    token: str

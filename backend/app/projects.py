@@ -1,3 +1,5 @@
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -5,7 +7,7 @@ from sqlalchemy.orm import Session
 from .auth import current_user
 from .db import get_db
 from .models import Project, User
-from .schemas import ProjectIn, ProjectOut, ProjectSummary
+from .schemas import ProjectIn, ProjectOut, ProjectSummary, ShareOut
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -55,3 +57,34 @@ def delete_project(project_id: str, user: User = Depends(current_user), db: Sess
     db.delete(_owned(project_id, user, db))
     db.commit()
     return Response(status_code=204)
+
+
+# --- Read-only sharing (phone / AR hand-off) -------------------------------------------------
+
+@router.post("/{project_id}/share", response_model=ShareOut)
+def share_project(project_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    p = _owned(project_id, user, db)
+    if not p.share_token:
+        p.share_token = secrets.token_urlsafe(24)
+        db.commit()
+    return ShareOut(token=p.share_token)
+
+
+@router.delete("/{project_id}/share", status_code=204)
+def unshare_project(project_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    p = _owned(project_id, user, db)
+    p.share_token = None
+    db.commit()
+    return Response(status_code=204)
+
+
+shared_router = APIRouter(prefix="/shared", tags=["shared"])
+
+
+@shared_router.get("/{token}", response_model=ProjectOut)
+def get_shared(token: str, db: Session = Depends(get_db)):
+    """Public, read-only. The token is the only credential, so it must stay unguessable."""
+    p = db.scalar(select(Project).where(Project.share_token == token))
+    if p is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Share link is invalid or was revoked")
+    return p

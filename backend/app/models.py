@@ -33,6 +33,8 @@ class Project(Base):
     owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
     name: Mapped[str] = mapped_column(String(255))
     data: Mapped[dict] = mapped_column(JSON)  # the full Project document from the frontend
+    # Random, unguessable token that grants read-only access (phone/AR hand-off). None = not shared.
+    share_token: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 

@@ -5,6 +5,7 @@ import type { Project } from '../model/types';
 import { exportGLB, exportUSDZ } from '../export/models';
 import { exportPlanPDF } from '../export/pdf';
 import { RenderDialog } from './RenderDialog';
+import { ShareDialog } from './ShareDialog';
 
 export function ProjectBar() {
   const { project, dirty, remoteId, setProject, setProjectName, setRemoteId, markSaved } = useStore();
@@ -14,6 +15,7 @@ export function ProjectBar() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [status, setStatus] = useState('');
   const [showRender, setShowRender] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   const refresh = async () => {
     if (!api.isLoggedIn()) return;
@@ -99,6 +101,7 @@ export function ProjectBar() {
         </div>
       </div>
       <button className="primary" onClick={() => setShowRender(true)}>Render image</button>
+      <button onClick={() => setShowShare(true)}>Phone / AR</button>
       <span className="spacer" />
       {loggedIn ? (
         <>
@@ -121,6 +124,7 @@ export function ProjectBar() {
       )}
       {status && <span className="status">{status}</span>}
       {showRender && <RenderDialog onClose={() => setShowRender(false)} />}
+      {showShare && <ShareDialog onClose={() => setShowShare(false)} />}
     </header>
   );
 }

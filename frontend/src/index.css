@@ -81,3 +81,17 @@ button.danger { color: var(--danger); }
 .progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
 .progress > div { height: 100%; background: var(--accent); transition: width .2s; }
 .render-preview { width: 100%; border-radius: 4px; background: #000; }
+
+/* Phone / AR viewer */
+.ar-page { display: flex; flex-direction: column; height: 100%; }
+.ar-page .name-static { color: var(--muted); }
+.ar-canvas { flex: 1; min-height: 0; position: relative; }
+.ar-note { margin: 0; padding: 10px 14px; color: var(--muted); border-top: 1px solid var(--line); }
+.ar-controls {
+  position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  background: rgba(20, 22, 27, .85); display: flex; flex-direction: column; gap: 8px; font-size: 15px;
+}
+.ar-controls button, .ar-controls select { padding: 10px 12px; font-size: 15px; }
+.modal.share { width: min(420px, 92vw); align-items: center; text-align: center; }
+.modal.share input { width: 100%; }
+.qr { background: #fff; padding: 8px; border-radius: 6px; }
