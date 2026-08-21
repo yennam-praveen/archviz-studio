@@ -1,11 +1,15 @@
 import { create } from 'zustand';
-import type { Level, Opening, Project, Wall } from './types';
-import { uid } from './types';
+import type { Level, Opening, Project, Roof, SunSettings, Wall } from './types';
+import { DEFAULT_ROOF, DEFAULT_SUN, uid } from './types';
+import { DEFAULT_FLOOR_MATERIAL } from './materials';
+import { levelBounds } from './geometry';
 
 export interface Selection {
   kind: 'wall' | 'opening' | null;
   id: string | null;
 }
+
+export type ViewMode = 'orbit' | 'walk';
 
 interface State {
   project: Project;
@@ -13,6 +17,7 @@ interface State {
   selection: Selection;
   dirty: boolean;
   remoteId: string | null; // id on the backend, once saved
+  viewMode: ViewMode;
 
   level(): Level;
   setProject(p: Project, remoteId?: string | null): void;
@@ -20,6 +25,7 @@ interface State {
   setRemoteId(id: string | null): void;
   markSaved(): void;
   select(sel: Selection): void;
+  setViewMode(m: ViewMode): void;
 
   addWall(w: Omit<Wall, 'id'>): string;
   updateWall(id: string, patch: Partial<Wall>): void;
@@ -30,7 +36,31 @@ interface State {
   removeOpening(id: string): void;
 
   rebuildFloor(): void;
+  setFloorMaterial(material: string): void;
   setLevelHeight(h: number): void;
+
+  setActiveLevel(id: string): void;
+  addLevel(): void;
+  removeLevel(id: string): void;
+  renameLevel(name: string): void;
+  setRoof(patch: Partial<Roof> | null): void;
+  setSun(patch: Partial<SunSettings>): void;
+}
+
+/** Level elevations are derived: each level sits on top of the one below. */
+function restack(p: Project) {
+  let e = 0;
+  for (const l of p.levels) {
+    l.elevation = e;
+    e += l.height;
+  }
+}
+
+/** Upgrade documents saved by earlier versions. */
+export function migrate(p: Project): Project {
+  p.sun = { ...DEFAULT_SUN, ...(p.sun ?? {}) };
+  restack(p);
+  return p;
 }
 
 export function sampleProject(): Project {
@@ -42,16 +72,17 @@ export function sampleProject(): Project {
     walls: [],
     openings: [],
     floors: [],
+    roof: { ...DEFAULT_ROOF },
   };
   const t = 0.2;
-  const mk = (s: [number, number], e: [number, number]): Wall => ({
-    id: uid(), start: s, end: e, thickness: t, height: 2.7,
+  const mk = (s: [number, number], e: [number, number], material?: string): Wall => ({
+    id: uid(), start: s, end: e, thickness: t, height: 2.7, material,
   });
   lvl.walls = [
-    mk([0, 0], [8, 0]),
-    mk([8, 0], [8, 6]),
-    mk([8, 6], [0, 6]),
-    mk([0, 6], [0, 0]),
+    mk([0, 0], [8, 0], 'plaster_warm'),
+    mk([8, 0], [8, 6], 'plaster_warm'),
+    mk([8, 6], [0, 6], 'plaster_warm'),
+    mk([0, 6], [0, 0], 'plaster_warm'),
     mk([4, 0], [4, 6]),
   ];
   lvl.openings = [
@@ -60,19 +91,22 @@ export function sampleProject(): Project {
     { id: uid(), wallId: lvl.walls[2].id, type: 'window', offset: 1, width: 1.8, height: 1.2, sillHeight: 0.9 },
     { id: uid(), wallId: lvl.walls[4].id, type: 'door', offset: 2.5, width: 0.9, height: 2.1, sillHeight: 0 },
   ];
-  lvl.floors = [{ id: uid(), polygon: [[0, 0], [8, 0], [8, 6], [0, 6]], material: 'concrete' }];
-  return { id: uid(), name: 'Sample house', units: 'm', levels: [lvl] };
+  lvl.floors = [{ id: uid(), polygon: [[0, 0], [8, 0], [8, 6], [0, 6]], material: 'oak' }];
+  return { id: uid(), name: 'Sample house', units: 'm', levels: [lvl], sun: { ...DEFAULT_SUN } };
 }
 
 export const useStore = create<State>((set, get) => {
   const project = sampleProject();
-  const mutateLevel = (fn: (l: Level) => void) =>
+
+  const mutate = (fn: (p: Project) => void) =>
     set((s) => {
       const p = structuredClone(s.project);
-      const l = p.levels.find((x) => x.id === s.activeLevelId)!;
-      fn(l);
+      fn(p);
+      restack(p);
       return { project: p, dirty: true };
     });
+  const mutateLevel = (fn: (l: Level) => void) =>
+    mutate((p) => fn(p.levels.find((x) => x.id === get().activeLevelId)!));
 
   return {
     project,
@@ -80,14 +114,18 @@ export const useStore = create<State>((set, get) => {
     selection: { kind: null, id: null },
     dirty: false,
     remoteId: null,
+    viewMode: 'orbit',
 
     level: () => get().project.levels.find((l) => l.id === get().activeLevelId)!,
-    setProject: (p, remoteId = null) =>
-      set({ project: p, activeLevelId: p.levels[0].id, selection: { kind: null, id: null }, dirty: false, remoteId }),
+    setProject: (p, remoteId = null) => {
+      const m = migrate(structuredClone(p));
+      set({ project: m, activeLevelId: m.levels[0].id, selection: { kind: null, id: null }, dirty: false, remoteId });
+    },
     setProjectName: (name) => set((s) => ({ project: { ...s.project, name }, dirty: true })),
     setRemoteId: (remoteId) => set({ remoteId }),
     markSaved: () => set({ dirty: false }),
     select: (selection) => set({ selection }),
+    setViewMode: (viewMode) => set({ viewMode }),
 
     addWall: (w) => {
       const id = uid();
@@ -124,19 +162,59 @@ export const useStore = create<State>((set, get) => {
       set({ selection: { kind: null, id: null } });
     },
 
-    // Phase-1 simplification: floor = bounding box of all walls.
+    // Phase-2 simplification: floor = bounding box of all walls.
     rebuildFloor: () =>
       mutateLevel((l) => {
-        if (!l.walls.length) return;
-        const xs = l.walls.flatMap((w) => [w.start[0], w.end[0]]);
-        const ys = l.walls.flatMap((w) => [w.start[1], w.end[1]]);
-        const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-        l.floors = [{ id: uid(), polygon: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], material: 'concrete' }];
+        const b = levelBounds(l);
+        if (!b) return;
+        const material = l.floors[0]?.material ?? DEFAULT_FLOOR_MATERIAL;
+        l.floors = [{ id: uid(), polygon: [[b.x0, b.y0], [b.x1, b.y0], [b.x1, b.y1], [b.x0, b.y1]], material }];
       }),
+    setFloorMaterial: (material) => mutateLevel((l) => l.floors.forEach((f) => (f.material = material))),
     setLevelHeight: (h) =>
       mutateLevel((l) => {
         l.height = h;
         l.walls.forEach((w) => (w.height = h));
       }),
+
+    setActiveLevel: (activeLevelId) => set({ activeLevelId, selection: { kind: null, id: null } }),
+    addLevel: () => {
+      const id = uid();
+      mutate((p) => {
+        const below = p.levels[p.levels.length - 1];
+        // New top level copies the outline of the one below and takes over the roof.
+        const walls = below.walls.map((w) => ({ ...w, id: uid() }));
+        const roof = below.roof ?? { ...DEFAULT_ROOF };
+        delete below.roof;
+        p.levels.push({
+          id,
+          name: `Level ${p.levels.length}`,
+          elevation: 0,
+          height: below.height,
+          walls,
+          openings: [],
+          floors: below.floors.map((f) => ({ ...f, id: uid() })),
+          roof,
+        });
+      });
+      set({ activeLevelId: id, selection: { kind: null, id: null } });
+    },
+    removeLevel: (id) => {
+      const p = get().project;
+      if (p.levels.length <= 1) return;
+      mutate((q) => {
+        const idx = q.levels.findIndex((l) => l.id === id);
+        const [removed] = q.levels.splice(idx, 1);
+        if (removed.roof && q.levels.length) q.levels[q.levels.length - 1].roof ??= removed.roof;
+      });
+      set({ activeLevelId: get().project.levels[0].id, selection: { kind: null, id: null } });
+    },
+    renameLevel: (name) => mutateLevel((l) => (l.name = name)),
+    setRoof: (patch) =>
+      mutateLevel((l) => {
+        if (patch === null) delete l.roof;
+        else l.roof = { ...DEFAULT_ROOF, ...(l.roof ?? {}), ...patch };
+      }),
+    setSun: (patch) => mutate((p) => Object.assign(p.sun, patch)),
   };
 });

@@ -50,15 +50,24 @@ VR/AR "free" later: the same scene, a different camera.
 
 | Phase | Scope |
 |---|---|
-| 1 (this scaffold) | Dimension input, 2D plan with snapping, 3D extrusion with openings, save/load, auth |
-| 2 | PBR materials, HDRI + sun study, post-processing, multi-storey, roofs, first-person walk |
+| 1 ✅ | Dimension input, 2D plan with snapping, 3D extrusion with openings, save/load, auth |
+| 2 ✅ | Material presets, physical sky + sun/shadow study, N8AO/SMAA post-processing, multi-storey levels, flat/gable/hip roofs, first-person walk |
 | 3 | Path-traced "Render image" (three-gpu-pathtracer), glTF/USDZ export, PDF plan |
 | 4 | Android WebXR AR: tabletop scale model, then 1:1 on-site placement |
 
-## Phase-1 limitations (deliberate)
+## Phase 2 notes
+
+- **Sun study** (`src/model/sun.ts`): declination + hour-angle model, ~1° accuracy. Latitude defaults to
+  Mauritius (−20.2°); set *North offset* to rotate the plan's +Y away from true north.
+- **Roofs** cover the level's bounding box (rectangular). Ridge runs along the longer axis.
+- **Levels** stack automatically; each new level copies the outline below and takes over the roof.
+- **Walk mode**: WASD + mouse-look at 1.6 m eye height, Shift to run, Esc to release the pointer. No collision yet.
+- **Materials** are procedural PBR values (no texture files → nothing to license). Phase 3 can add CC0 maps.
+
+## Known limitations (deliberate)
 
 - Orthogonal walls are the tested path; angled walls render but plan editing is by coordinates only.
-- Floor = bounding box of all walls ("Rebuild floor" button). Proper room detection comes with phase 2.
-- Wall joints are butt joints; mitred corners are a phase-2 polish item.
+- Floor = bounding box of all walls ("Rebuild floor" button). Proper room detection is a phase-3 item.
+- Wall joints are butt joints; mitred corners are a phase-3 polish item.
 - Tables are created with `create_all`; add Alembic before deploying to Postgres.
 - `ARCHVIZ_JWT_SECRET` **must** be set in production (see `backend/app/config.py`).
