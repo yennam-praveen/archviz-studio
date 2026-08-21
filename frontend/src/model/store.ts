@@ -11,6 +11,16 @@ export interface Selection {
 
 export type ViewMode = 'orbit' | 'walk';
 
+/** Scanned plan shown under the 2D editor for checking an import. Session-only, not saved. */
+export interface Underlay {
+  url: string;
+  /** plan metres covered by the full image width */
+  widthM: number;
+  /** plan position of the image's bottom-left corner */
+  origin: [number, number];
+  opacity: number;
+}
+
 interface State {
   project: Project;
   activeLevelId: string;
@@ -18,8 +28,11 @@ interface State {
   dirty: boolean;
   remoteId: string | null; // id on the backend, once saved
   viewMode: ViewMode;
+  underlay: Underlay | null;
 
   level(): Level;
+  setUnderlay(u: Underlay | null): void;
+  updateUnderlay(patch: Partial<Underlay>): void;
   setProject(p: Project, remoteId?: string | null): void;
   setProjectName(name: string): void;
   setRemoteId(id: string | null): void;
@@ -115,6 +128,10 @@ export const useStore = create<State>((set, get) => {
     dirty: false,
     remoteId: null,
     viewMode: 'orbit',
+    underlay: null,
+
+    setUnderlay: (underlay) => set({ underlay }),
+    updateUnderlay: (patch) => set((s) => (s.underlay ? { underlay: { ...s.underlay, ...patch } } : {})),
 
     level: () => get().project.levels.find((l) => l.id === get().activeLevelId)!,
     setProject: (p, remoteId = null) => {

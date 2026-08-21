@@ -6,6 +6,7 @@ import { exportGLB, exportUSDZ } from '../export/models';
 import { exportPlanPDF } from '../export/pdf';
 import { RenderDialog } from './RenderDialog';
 import { ShareDialog } from './ShareDialog';
+import { ImportPlanDialog } from './ImportPlanDialog';
 
 export function ProjectBar() {
   const { project, dirty, remoteId, setProject, setProjectName, setRemoteId, markSaved } = useStore();
@@ -16,6 +17,7 @@ export function ProjectBar() {
   const [status, setStatus] = useState('');
   const [showRender, setShowRender] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const refresh = async () => {
     if (!api.isLoggedIn()) return;
@@ -87,6 +89,7 @@ export function ProjectBar() {
       <input className="name" value={project.name} onChange={(e) => setProjectName(e.target.value)} />
       <span className={dirty ? 'dot dirty' : 'dot'} title={dirty ? 'Unsaved changes' : 'Saved'} />
       <button onClick={() => setProject(sampleProject())}>New</button>
+      <button onClick={() => setShowImport(true)}>Import plan</button>
       <div className="menu">
         <button>Export ▾</button>
         <div className="menu-items">
@@ -125,6 +128,7 @@ export function ProjectBar() {
       {status && <span className="status">{status}</span>}
       {showRender && <RenderDialog onClose={() => setShowRender(false)} />}
       {showShare && <ShareDialog onClose={() => setShowShare(false)} />}
+      {showImport && <ImportPlanDialog onClose={() => setShowImport(false)} />}
     </header>
   );
 }

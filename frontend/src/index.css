@@ -95,3 +95,18 @@ button.danger { color: var(--danger); }
 .modal.share { width: min(420px, 92vw); align-items: center; text-align: center; }
 .modal.share input { width: 100%; }
 .qr { background: #fff; padding: 8px; border-radius: 6px; }
+
+/* Import plan dialog */
+.modal.import { width: min(1000px, 94vw); }
+.import-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.import-left, .import-right { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.file-btn { text-align: center; padding: 14px; border-style: dashed; }
+.import-preview { max-width: 100%; max-height: 50vh; object-fit: contain; background: #fff; border-radius: 4px; }
+textarea { background: #272b34; color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; font: inherit; resize: vertical; }
+.import-result { border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.import-result h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.import-result p { margin: 0; }
+.conf { text-transform: none; letter-spacing: 0; margin-left: 6px; padding: 1px 6px; border-radius: 3px; }
+.conf.high { background: #1f4d2a; color: #8fe0a0; } .conf.medium { background: #4d3f1f; color: #ffd27f; } .conf.low { background: #4d1f1f; color: #ff9d9d; }
+.warn-list { margin: 0; padding-left: 18px; color: var(--accent); }
+@media (max-width: 800px) { .import-grid { grid-template-columns: 1fr; } }

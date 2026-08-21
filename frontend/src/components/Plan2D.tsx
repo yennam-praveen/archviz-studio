@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
+import { Stage, Layer, Line, Rect, Circle, Text, Image as KImage } from 'react-konva';
 import type Konva from 'konva';
 import { useStore } from '../model/store';
 import { wallAngle } from '../model/geometry';
@@ -20,6 +20,15 @@ export function Plan2D({ drawMode, onDrawDone }: Props) {
   const selection = useStore((s) => s.selection);
   const select = useStore((s) => s.select);
   const addWall = useStore((s) => s.addWall);
+  const underlay = useStore((s) => s.underlay);
+  const [underlayImg, setUnderlayImg] = useState<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (!underlay) { setUnderlayImg(null); return; }
+    const img = new window.Image();
+    img.onload = () => setUnderlayImg(img);
+    img.src = underlay.url;
+  }, [underlay?.url]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 600, h: 400 });
@@ -86,7 +95,15 @@ export function Plan2D({ drawMode, onDrawDone }: Props) {
         onClick={onStageClick}
         onMouseMove={(e) => setCursor(stagePos(e))}
       >
-        <Layer listening={false}>{gridLines}</Layer>
+        <Layer listening={false}>
+          {underlay && underlayImg && (() => {
+            const wPx = underlay.widthM * SCALE;
+            const hPx = wPx * (underlayImg.naturalHeight / underlayImg.naturalWidth);
+            const [x, yBottom] = toPx(underlay.origin[0], underlay.origin[1]);
+            return <KImage image={underlayImg} x={x} y={yBottom - hPx} width={wPx} height={hPx} opacity={underlay.opacity} />;
+          })()}
+          {gridLines}
+        </Layer>
         <Layer>
           {level.walls.map((w) => {
             const [x1, y1] = toPx(...w.start);

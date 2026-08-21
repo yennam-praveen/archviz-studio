@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from . import auth, projects
+from . import auth, plan_import, projects
 from .config import settings
 from .db import Base, engine
 
@@ -36,3 +36,4 @@ def health() -> dict:
 app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(projects.shared_router)
+app.include_router(plan_import.router)

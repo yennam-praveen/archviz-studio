@@ -58,6 +58,8 @@ export function DimensionPanel({ drawMode, setDrawMode }: { drawMode: boolean; s
   const level = useStore((s) => s.project.levels.find((l) => l.id === s.activeLevelId)!);
   const selection = useStore((s) => s.selection);
   const viewMode = useStore((s) => s.viewMode);
+  const underlay = useStore((s) => s.underlay);
+  const { setUnderlay, updateUnderlay } = useStore();
   const {
     addWall, updateWall, removeWall, addOpening, updateOpening, removeOpening, rebuildFloor, setFloorMaterial,
     setLevelHeight, select, setActiveLevel, addLevel, removeLevel, renameLevel, setRoof, setSun, setViewMode,
@@ -156,6 +158,23 @@ export function DimensionPanel({ drawMode, setDrawMode }: { drawMode: boolean; s
           <Num label="North offset (°)" value={project.sun.northOffset} step={5} min={-180} max={180} onChange={(v) => setSun({ northOffset: v })} />
         </div>
       </section>
+
+      {underlay && (
+        <section>
+          <h3>Plan underlay</h3>
+          <Range label="Opacity" value={underlay.opacity} min={0} max={1} step={0.05} fmt={(v) => `${Math.round(v * 100)}%`} onChange={(v) => updateUnderlay({ opacity: v })} />
+          <div className="grid2">
+            <Num label="Image width (m)" value={underlay.widthM} min={0.5} onChange={(v) => updateUnderlay({ widthM: v })} />
+            <span />
+            <Num label="Left edge X (m)" value={underlay.origin[0]} onChange={(v) => updateUnderlay({ origin: [v, underlay.origin[1]] })} />
+            <Num label="Bottom edge Y (m)" value={underlay.origin[1]} onChange={(v) => updateUnderlay({ origin: [underlay.origin[0], v] })} />
+          </div>
+          <div className="row">
+            <button onClick={() => setUnderlay(null)}>Remove underlay</button>
+          </div>
+          <p className="hint">Adjust width and position until the image lines up with the extracted walls, then correct any wall by selecting it.</p>
+        </section>
+      )}
 
       <section>
         <h3>Add wall by dimensions</h3>

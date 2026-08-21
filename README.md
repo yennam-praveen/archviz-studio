@@ -97,6 +97,23 @@ VR/AR "free" later: the same scene, a different camera.
   session start. First on-device test should check: reticle appears on floor/table, tap places, model scale
   reads correctly, Re-place works, Exit returns to the page.
 
+## Plan import (Claude vision)
+
+*Import plan* in the toolbar accepts a PNG/JPEG/WebP/PDF floor plan — a scan or even a phone photo of a
+paper drawing. The backend (`backend/app/plan_import.py`) sends it to Claude (`claude-opus-5`) with a
+schema-constrained response (`messages.parse` + a Pydantic `ExtractedPlan`): walls as centre-line
+segments in metres, openings attached to walls, detected units, a scale rationale, confidence and a list
+of warnings. It is converted to the project document, previewed (wall/opening counts, rooms, warnings)
+and applied with one click. The uploaded image is then shown **under the 2D editor** (opacity, width and
+position controls in the panel) so the architect can line it up and correct any wall the model got wrong.
+
+- Requires `ANTHROPIC_API_KEY` in the backend environment; without it the endpoint returns 503 with a clear message.
+- Give the overall width/depth in the dialog when you know them — the model then scales exactly instead of
+  reading dimension strings.
+- Typical run: 20–90 s per plan. The model is good at orthogonal plans with dimension strings; expect to fix
+  a few walls on hand sketches or low-resolution photos. Curved walls are not supported by the data model.
+- Tested with a stubbed model in `backend/tests/test_plan_import.py`; the live call was not exercised in this repo.
+
 ## Known limitations (deliberate)
 
 - Orthogonal walls are the tested path; angled walls render but plan editing is by coordinates only.
