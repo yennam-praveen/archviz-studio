@@ -1,0 +1,25 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Dashboard → New → Blueprint → pick this repo. Creates the API service and a free Postgres database.
+services:
+  - type: web
+    name: archviz-studio-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ARCHVIZ_DATABASE_URL
+        fromDatabase:
+          name: archviz-studio-db
+          property: connectionString
+      - key: ARCHVIZ_JWT_SECRET
+        generateValue: true
+      - key: ARCHVIZ_CORS_ORIGINS
+        value: '["https://yennam-praveen.github.io","http://localhost:5173"]'
+      - key: ANTHROPIC_API_KEY
+        sync: false # prompted for in the dashboard; enables plan import
+
+databases:
+  - name: archviz-studio-db
+    plan: free

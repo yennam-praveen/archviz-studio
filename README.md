@@ -114,6 +114,17 @@ position controls in the panel) so the architect can line it up and correct any 
   a few walls on hand sketches or low-resolution photos. Curved walls are not supported by the data model.
 - Tested with a stubbed model in `backend/tests/test_plan_import.py`; the live call was not exercised in this repo.
 
+## Hosting
+
+- **Frontend**: GitHub Pages via `.github/workflows/pages.yml` → https://yennam-praveen.github.io/archviz-studio/
+  (`/?ar=demo` opens the AR viewer with the sample house, no backend needed). The build reads the repository
+  variable `VITE_API_URL` for the backend address.
+- **Backend**: Render via `render.yaml` (Docker web service + free Postgres). Dashboard → *New → Blueprint* →
+  pick this repo; paste `ANTHROPIC_API_KEY` when prompted (optional, enables plan import). Free tier spins down
+  after 15 min idle — the first request then takes ~30 s. `ARCHVIZ_CORS_ORIGINS` must list the Pages origin.
+- Schema is created with `create_all` on a fresh database. Adding columns later needs a migration step
+  (Alembic) — the SQLite `ALTER TABLE` shim in `main.py` is dev-only.
+
 ## Known limitations (deliberate)
 
 - Orthogonal walls are the tested path; angled walls render but plan editing is by coordinates only.
