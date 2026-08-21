@@ -108,7 +108,8 @@ export function RenderDialog({ onClose }: { onClose(): void }) {
       await new Promise<void>((resolve) => {
         const loop = () => {
           if (stopRef.current || n >= targetSamples) { resolve(); return; }
-          pt.renderSample();
+          // One full sample per tick (renderSample draws a single tile of the 3×3 grid).
+          for (let i = 0; i < 9; i++) pt.renderSample();
           n = Math.floor(pt.samples);
           setSamples(n);
           if ((pt as unknown as { isCompiling: boolean }).isCompiling) setMessage('Compiling path-tracing shader…');
