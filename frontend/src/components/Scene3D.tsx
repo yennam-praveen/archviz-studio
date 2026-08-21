@@ -8,6 +8,7 @@ import { buildFloorGeometry, buildRoofGeometry, buildWallGeometry, levelBounds }
 import { DEFAULT_FLOOR_MATERIAL, DEFAULT_WALL_MATERIAL, preset } from '../model/materials';
 import { sunDirection, sunPosition } from '../model/sun';
 import type { Level } from '../model/types';
+import { viewRegistry } from './viewRegistry';
 
 function LevelMeshes({ level, active }: { level: Level; active: boolean }) {
   const selection = useStore((s) => s.selection);
@@ -152,6 +153,19 @@ function WalkControls() {
   return <PointerLockControls domElement={gl.domElement} />;
 }
 
+/** Publishes the viewport camera for the render dialog / exporters. */
+function CameraRegistrar() {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    viewRegistry.camera = camera as THREE.PerspectiveCamera;
+    viewRegistry.aspect = size.width / Math.max(1, size.height);
+    return () => {
+      viewRegistry.camera = null;
+    };
+  }, [camera, size]);
+  return null;
+}
+
 function OrbitSetup() {
   const project = useStore((s) => s.project);
   const target = useMemo<[number, number, number]>(() => {
@@ -194,6 +208,7 @@ export function Scene3D() {
         infiniteGrid
         position={[0, 0.005, 0]}
       />
+      <CameraRegistrar />
       {viewMode === 'walk' ? <WalkControls /> : <OrbitSetup />}
       <EffectComposer multisampling={0}>
         <N8AO aoRadius={0.6} intensity={2} distanceFalloff={1} quality="medium" />

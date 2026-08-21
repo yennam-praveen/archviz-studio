@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { api, type ProjectSummary } from '../api/client';
 import { sampleProject, useStore } from '../model/store';
 import type { Project } from '../model/types';
+import { exportGLB, exportUSDZ } from '../export/models';
+import { exportPlanPDF } from '../export/pdf';
+import { RenderDialog } from './RenderDialog';
 
 export function ProjectBar() {
   const { project, dirty, remoteId, setProject, setProjectName, setRemoteId, markSaved } = useStore();
@@ -10,6 +13,7 @@ export function ProjectBar() {
   const [password, setPassword] = useState('');
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [status, setStatus] = useState('');
+  const [showRender, setShowRender] = useState(false);
 
   const refresh = async () => {
     if (!api.isLoggedIn()) return;
@@ -23,6 +27,16 @@ export function ProjectBar() {
     void refresh();
   }, [loggedIn]);
 
+  const run = (label: string, fn: () => Promise<void> | void) => async () => {
+    try {
+      setStatus(`${label}…`);
+      await fn();
+      setStatus('');
+    } catch (e) {
+      setStatus(`${label} failed: ${e}`);
+    }
+  };
+
   const auth = async (mode: 'login' | 'register') => {
     try {
       await (mode === 'login' ? api.login(email, password) : api.register(email, password));
@@ -33,21 +47,16 @@ export function ProjectBar() {
     }
   };
 
-  const save = async () => {
-    try {
-      if (remoteId) {
-        await api.updateProject(remoteId, project);
-      } else {
-        const r = await api.createProject(project);
-        setRemoteId(r.id);
-      }
-      markSaved();
-      setStatus('Saved');
-      void refresh();
-    } catch (e) {
-      setStatus(String(e));
+  const save = run('Save', async () => {
+    if (remoteId) {
+      await api.updateProject(remoteId, project);
+    } else {
+      const r = await api.createProject(project);
+      setRemoteId(r.id);
     }
-  };
+    markSaved();
+    void refresh();
+  });
 
   const load = async (id: string) => {
     try {
@@ -76,11 +85,20 @@ export function ProjectBar() {
       <input className="name" value={project.name} onChange={(e) => setProjectName(e.target.value)} />
       <span className={dirty ? 'dot dirty' : 'dot'} title={dirty ? 'Unsaved changes' : 'Saved'} />
       <button onClick={() => setProject(sampleProject())}>New</button>
-      <button onClick={exportJson}>Export JSON</button>
-      <label className="btn">
-        Import JSON
-        <input type="file" accept=".json" hidden onChange={(e) => e.target.files?.[0] && importJson(e.target.files[0])} />
-      </label>
+      <div className="menu">
+        <button>Export ▾</button>
+        <div className="menu-items">
+          <button onClick={run('glTF export', () => exportGLB(project))}>3D model (.glb) — Blender, Twinmotion</button>
+          <button onClick={run('USDZ export', () => exportUSDZ(project))}>iPhone AR (.usdz)</button>
+          <button onClick={run('PDF export', () => exportPlanPDF(project))}>Plan drawings (.pdf)</button>
+          <button onClick={exportJson}>Project file (.json)</button>
+          <label className="btn">
+            Import project (.json)
+            <input type="file" accept=".json" hidden onChange={(e) => e.target.files?.[0] && importJson(e.target.files[0])} />
+          </label>
+        </div>
+      </div>
+      <button className="primary" onClick={() => setShowRender(true)}>Render image</button>
       <span className="spacer" />
       {loggedIn ? (
         <>
@@ -102,6 +120,7 @@ export function ProjectBar() {
         </>
       )}
       {status && <span className="status">{status}</span>}
+      {showRender && <RenderDialog onClose={() => setShowRender(false)} />}
     </header>
   );
 }

@@ -13,6 +13,7 @@
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@react-three/postprocessing": "^3.0.5",
+    "jspdf": "^4.2.1",
     "konva": "^10.3.1",
     "n8ao": "^2.0.1",
     "postprocessing": "^6.39.4",
@@ -21,6 +22,7 @@
     "react-konva": "^19.2.5",
     "three": "^0.185.1",
     "three-bvh-csg": "^0.0.18",
+    "three-gpu-pathtracer": "^0.0.24",
     "three-mesh-bvh": "^0.9.14",
     "zustand": "^5.0.15"
   },

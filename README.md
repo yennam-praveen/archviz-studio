@@ -52,7 +52,7 @@ VR/AR "free" later: the same scene, a different camera.
 |---|---|
 | 1 ✅ | Dimension input, 2D plan with snapping, 3D extrusion with openings, save/load, auth |
 | 2 ✅ | Material presets, physical sky + sun/shadow study, N8AO/SMAA post-processing, multi-storey levels, flat/gable/hip roofs, first-person walk |
-| 3 | Path-traced "Render image" (three-gpu-pathtracer), glTF/USDZ export, PDF plan |
+| 3 ✅ | "Render image" with two engines (fast rasterized / photoreal path-traced), glTF + USDZ export, dimensioned PDF plans |
 | 4 | Android WebXR AR: tabletop scale model, then 1:1 on-site placement |
 
 ## Phase 2 notes
@@ -63,6 +63,20 @@ VR/AR "free" later: the same scene, a different camera.
 - **Levels** stack automatically; each new level copies the outline below and takes over the roof.
 - **Walk mode**: WASD + mouse-look at 1.6 m eye height, Shift to run, Esc to release the pointer. No collision yet.
 - **Materials** are procedural PBR values (no texture files → nothing to license). Phase 3 can add CC0 maps.
+
+## Phase 3 notes
+
+- **Render image** (`src/components/RenderDialog.tsx`) renders from the current 3D viewpoint at up to 4K.
+  - *Fast* engine (`src/export/rasterRender.ts`): soft shadows, sky gradient, 2× supersampling; ~1 s on any GPU.
+  - *Photoreal* engine: `three-gpu-pathtracer`, progressive; 200–1500 samples. Needs a real GPU. The first
+    run compiles a very large shader (1–3 min on laptops). **Known driver issue:** Intel integrated GPUs on
+    Windows via ANGLE/Direct3D11 miscompile the shader and output pure black — the dialog detects this
+    after 8 samples and falls back to the fast engine automatically. Launching Chrome with
+    `--use-angle=gl` or using a discrete GPU avoids it.
+- **Export menu**: `.glb` (Blender/Twinmotion/SketchUp for hero renders), `.usdz` (iPhone AR Quick Look),
+  `.pdf` A3 plan sheets (one per level, auto scale, wall dimension strings in mm, door swings, title block,
+  scale bar, north arrow), `.json` project file. All three 3D/2D exports are built from the same
+  `src/model/buildScene.ts` so they always agree with the viewport.
 
 ## Known limitations (deliberate)
 

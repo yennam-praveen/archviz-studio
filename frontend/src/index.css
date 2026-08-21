@@ -58,3 +58,26 @@ button:hover, .btn:hover { border-color: #4a5060; }
 button.primary { background: var(--accent); color: #1a1a1a; border-color: transparent; font-weight: 600; }
 button.active { border-color: var(--accent); color: var(--accent); }
 button.danger { color: var(--danger); }
+
+/* Export dropdown */
+.menu { position: relative; }
+.menu-items {
+  display: none; position: absolute; top: 100%; left: 0; z-index: 20; min-width: 260px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px;
+  flex-direction: column; gap: 2px; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.menu:hover .menu-items, .menu:focus-within .menu-items { display: flex; }
+.menu-items button, .menu-items .btn { text-align: left; border-color: transparent; background: transparent; }
+.menu-items button:hover, .menu-items .btn:hover { background: #272b34; }
+
+/* Render dialog */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 50; display: flex; align-items: center; justify-content: center; }
+.modal {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px;
+  width: min(1100px, 92vw); max-height: 92vh; overflow: auto; display: flex; flex-direction: column; gap: 12px;
+}
+.modal-head { display: flex; align-items: center; gap: 12px; }
+.modal .row { align-items: flex-end; }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--accent); transition: width .2s; }
+.render-preview { width: 100%; border-radius: 4px; background: #000; }
