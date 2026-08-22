@@ -55,6 +55,8 @@ jobs:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
         run: |
+          # `update` generates the Android project from twa-manifest.json (and its checksum) without prompting.
+          bubblewrap update --skipVersionUpgrade --manifest ./twa-manifest.json
           bubblewrap build --skipPwaValidation --manifest ./twa-manifest.json
           ls -la *.apk *.aab || true
           mv app-release-signed.apk ArchVizStudio.apk
