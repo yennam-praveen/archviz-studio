@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.archvizstudio.app",
+    "sha256_cert_fingerprints": ["E2:83:E1:04:3F:E4:75:C4:E2:08:96:1D:C1:6D:B2:BC:A3:AB:17:DE:C0:F9:6D:FC:26:A0:47:A0:68:C5:5E:B2"]
+  }
+}]

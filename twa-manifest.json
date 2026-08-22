@@ -34,14 +34,21 @@
   "webManifestUrl": "https://yennam-praveen.github.io/archviz-studio/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
-  "alphaDependencies": { "enabled": false },
+  "alphaDependencies": {
+    "enabled": false
+  },
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://yennam-praveen.github.io/archviz-studio/",
   "minSdkVersion": 24,
   "orientation": "default",
-  "fingerprints": [],
+  "fingerprints": [
+    {
+      "name": "ci",
+      "value": "E2:83:E1:04:3F:E4:75:C4:E2:08:96:1D:C1:6D:B2:BC:A3:AB:17:DE:C0:F9:6D:FC:26:A0:47:A0:68:C5:5E:B2"
+    }
+  ],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "appVersion": "1.0.0"
