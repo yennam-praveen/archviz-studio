@@ -1,0 +1,78 @@
+name: Build Android APK (Trusted Web Activity)
+
+# Wraps the hosted site (GitHub Pages) in a Trusted Web Activity: the APK launches Chrome
+# full-screen on the site, so WebXR AR works and the app updates itself with every deploy.
+# Run manually from the Actions tab, or automatically on a version tag (v1.2.3).
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'archviz-test-only' }}
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Point Bubblewrap at the runner's JDK and Android SDK
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "build-tools;34.0.0" "platforms;android-34" > /dev/null
+
+      - name: Signing key
+        # Uses the committed test keystore (android.keystore) if present; otherwise creates one and
+        # uploads it so it can be committed — the cert fingerprint must stay stable for assetlinks.json.
+        run: |
+          if [ ! -f android.keystore ]; then
+            keytool -genkeypair -v -keystore android.keystore -alias archviz -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" -dname "CN=ArchViz Studio, O=ArchViz, C=MU"
+            echo "::warning::Generated a new keystore — download the 'android-keystore' artifact and commit it as android.keystore"
+          fi
+          keytool -list -v -keystore android.keystore -alias archviz -storepass "$KEYSTORE_PASSWORD" | grep SHA256 | tee fingerprint.txt
+
+      - name: Build APK
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+        run: |
+          bubblewrap build --skipPwaValidation --manifest ./twa-manifest.json
+          ls -la *.apk *.aab || true
+          mv app-release-signed.apk ArchVizStudio.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ArchVizStudio-apk
+          path: |
+            ArchVizStudio.apk
+            fingerprint.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-keystore
+          path: android.keystore
+
+      - name: Publish GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ArchVizStudio.apk
+          body: |
+            Android app (Trusted Web Activity). Install the APK, allow "unknown sources" when asked.
+            Requires Chrome on Android. AR needs an ARCore-capable phone.

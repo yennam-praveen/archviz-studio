@@ -7,6 +7,7 @@ import { ARView } from './ar/ARView';
 import { api } from './api/client';
 import { migrate, sampleProject } from './model/store';
 import type { Project } from './model/types';
+import { useIsMobile } from './hooks/useMediaQuery';
 
 /** `/?ar=<token>` opens the read-only phone/AR viewer for a shared project. */
 function ARRoute({ token }: { token: string }) {
@@ -22,10 +23,40 @@ function ARRoute({ token }: { token: string }) {
   return <ARView project={project} />;
 }
 
+type MobileTab = 'edit' | 'plan' | '3d';
+
 export default function App() {
   const [drawMode, setDrawMode] = useState(false);
+  const [tab, setTab] = useState<MobileTab>('3d');
+  const isMobile = useIsMobile();
   const arToken = new URLSearchParams(location.search).get('ar');
   if (arToken) return <ARRoute token={arToken} />;
+
+  if (isMobile) {
+    return (
+      <div className="app mobile">
+        <ProjectBar compact />
+        <div className="main mobile">
+          {tab === 'edit' && <DimensionPanel drawMode={drawMode} setDrawMode={(v) => { setDrawMode(v); if (v) setTab('plan'); }} />}
+          {tab === 'plan' && (
+            <div className="view">
+              <Plan2D drawMode={drawMode} onDrawDone={() => setDrawMode(false)} />
+            </div>
+          )}
+          {tab === '3d' && (
+            <div className="view">
+              <Scene3D />
+            </div>
+          )}
+        </div>
+        <nav className="tabbar">
+          {([['edit', 'Edit'], ['plan', 'Plan'], ['3d', '3D']] as [MobileTab, string][]).map(([k, label]) => (
+            <button key={k} className={tab === k ? 'active' : ''} onClick={() => setTab(k)}>{label}</button>
+          ))}
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

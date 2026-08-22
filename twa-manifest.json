@@ -1,0 +1,48 @@
+{
+  "packageId": "com.archvizstudio.app",
+  "host": "yennam-praveen.github.io",
+  "name": "ArchViz Studio",
+  "launcherName": "ArchViz",
+  "display": "standalone",
+  "themeColor": "#1c1f26",
+  "themeColorDark": "#1c1f26",
+  "navigationColor": "#1c1f26",
+  "navigationColorDark": "#1c1f26",
+  "navigationDividerColor": "#2b2f38",
+  "navigationDividerColorDark": "#2b2f38",
+  "backgroundColor": "#14161b",
+  "enableNotifications": false,
+  "startUrl": "/archviz-studio/",
+  "iconUrl": "https://yennam-praveen.github.io/archviz-studio/icons/icon-512.png",
+  "maskableIconUrl": "https://yennam-praveen.github.io/archviz-studio/icons/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "archviz"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "AR demo",
+      "shortName": "AR demo",
+      "url": "/archviz-studio/?ar=demo",
+      "chosenIconUrl": "https://yennam-praveen.github.io/archviz-studio/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://yennam-praveen.github.io/archviz-studio/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://yennam-praveen.github.io/archviz-studio/",
+  "minSdkVersion": 24,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0"
+}

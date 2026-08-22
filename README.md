@@ -121,6 +121,20 @@ position controls in the panel) so the architect can line it up and correct any 
 recording produced by `frontend/scripts/record-tutorial.mjs` (Playwright drives the live app and burns in
 captions). To re-record after UI changes: start the dev server and backend, then `node scripts/record-tutorial.mjs`.
 
+## Phone layout, PWA and Android APK
+
+- **Responsive**: under 800 px the app switches to a phone layout — one view at a time (Edit / Plan / 3D tabs),
+  a compact toolbar with login in an *Account* dropdown, full-screen dialogs, larger touch targets.
+- **PWA**: `vite-plugin-pwa` generates `manifest.webmanifest` + a service worker, so Chrome offers
+  *Add to Home screen* and the app shell works offline (the tutorial video is fetched on demand).
+- **Android APK**: `.github/workflows/android.yml` builds a **Trusted Web Activity** with Bubblewrap from
+  `twa-manifest.json`. A TWA launches Chrome full-screen on the hosted site, so WebXR AR, camera and
+  every other feature work exactly as in the browser, and the app updates itself with each Pages deploy.
+  Run the workflow from the Actions tab (or push a `v*` tag to also publish a GitHub Release) and download
+  `ArchVizStudio.apk`. The committed `android.keystore` is a **test signing key** — before a Play Store
+  release generate a private one and keep it in a secret. `frontend/public/.well-known/assetlinks.json`
+  carries the key's SHA-256 so Android hides the browser bar; regenerate it if the key changes.
+
 ## Hosting
 
 - **Frontend**: GitHub Pages via `.github/workflows/pages.yml` → https://yennam-praveen.github.io/archviz-studio/

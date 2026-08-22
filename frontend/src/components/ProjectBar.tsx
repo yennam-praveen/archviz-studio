@@ -9,7 +9,7 @@ import { ShareDialog } from './ShareDialog';
 import { ImportPlanDialog } from './ImportPlanDialog';
 import { HelpDialog } from './HelpDialog';
 
-export function ProjectBar() {
+export function ProjectBar({ compact = false }: { compact?: boolean }) {
   const { project, dirty, remoteId, setProject, setProjectName, setRemoteId, markSaved } = useStore();
   const [loggedIn, setLoggedIn] = useState(api.isLoggedIn());
   const [email, setEmail] = useState('');
@@ -121,6 +121,19 @@ export function ProjectBar() {
           <button className="primary" onClick={save}>Save</button>
           <button onClick={() => { api.logout(); setLoggedIn(false); setRemoteId(null); }}>Logout</button>
         </>
+      ) : compact ? (
+        // Phone: keep the bar short — login fields live in a dropdown.
+        <div className="menu">
+          <button>Account ▾</button>
+          <div className="menu-items account">
+            <input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <div className="row">
+              <button onClick={() => auth('login')}>Login</button>
+              <button onClick={() => auth('register')}>Register</button>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           <input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
