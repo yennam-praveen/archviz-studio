@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: '17' }
 
       - uses: actions/setup-node@v4
@@ -35,6 +35,9 @@ jobs:
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_SDK_ROOT\"}" > ~/.bubblewrap/config.json
           yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "build-tools;34.0.0" "platforms;android-34" > /dev/null
+          # Bubblewrap validates the legacy layout <sdk>/tools/bin/sdkmanager; alias it to cmdline-tools.
+          [ -e "$ANDROID_SDK_ROOT/tools" ] || sudo ln -s "$ANDROID_SDK_ROOT/cmdline-tools/latest" "$ANDROID_SDK_ROOT/tools"
+          ls "$ANDROID_SDK_ROOT/tools/bin/sdkmanager"
 
       - name: Signing key
         # Uses the committed test keystore (android.keystore) if present; otherwise creates one and
