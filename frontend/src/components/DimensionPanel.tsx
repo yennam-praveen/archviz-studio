@@ -59,7 +59,7 @@ export function DimensionPanel({ drawMode, setDrawMode }: { drawMode: boolean; s
   const selection = useStore((s) => s.selection);
   const viewMode = useStore((s) => s.viewMode);
   const underlay = useStore((s) => s.underlay);
-  const { setUnderlay, updateUnderlay } = useStore();
+  const { setUnderlay, updateUnderlay, fitView } = useStore();
   const {
     addWall, updateWall, removeWall, addOpening, updateOpening, removeOpening, rebuildFloor, setFloorMaterial,
     setLevelHeight, select, setActiveLevel, addLevel, removeLevel, renameLevel, setRoof, setSun, setViewMode,
@@ -102,6 +102,7 @@ export function DimensionPanel({ drawMode, setDrawMode }: { drawMode: boolean; s
         <div className="row">
           <button className={viewMode === 'orbit' ? 'active' : ''} onClick={() => setViewMode('orbit')}>Orbit</button>
           <button className={viewMode === 'walk' ? 'active' : ''} onClick={() => setViewMode('walk')}>Walk inside</button>
+          <button onClick={fitView} title="Frame the whole building in the 3D view">Fit view</button>
         </div>
         {viewMode === 'walk' && <p className="hint">Click the 3D view to look around, WASD to move, Shift to run, Esc to release the mouse.</p>}
       </section>

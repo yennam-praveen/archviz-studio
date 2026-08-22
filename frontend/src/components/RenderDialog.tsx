@@ -46,7 +46,9 @@ export function RenderDialog({ onClose }: { onClose(): void }) {
 
   const runRaster = (w: number, h: number) => {
     setPhase('building');
-    const canvas = rasterRender(project, cameraFor(w, h), w, h);
+    const cam = cameraFor(w, h);
+    if (import.meta.env.DEV) (window as unknown as { __lastRenderCamera: unknown }).__lastRenderCamera = cam;
+    const canvas = rasterRender(project, cam, w, h);
     canvasRef.current = canvas;
     setPreview(canvas.toDataURL('image/png'));
     setSamples(targetSamples);
@@ -154,7 +156,8 @@ export function RenderDialog({ onClose }: { onClose(): void }) {
     setSamples(0);
     setPreview(null);
     setMessage('');
-    const h = Math.round(width / viewRegistry.aspect);
+    // Always a 16:9 frame: the 3D pane's own aspect depends on window layout and is often portrait.
+    const h = Math.round((width * 9) / 16);
     try {
       if (engine === 'raster') runRaster(width, h);
       else await runPathTraced(width, h);

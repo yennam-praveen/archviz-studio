@@ -7,6 +7,7 @@ import { exportPlanPDF } from '../export/pdf';
 import { RenderDialog } from './RenderDialog';
 import { ShareDialog } from './ShareDialog';
 import { ImportPlanDialog } from './ImportPlanDialog';
+import { HelpDialog } from './HelpDialog';
 
 export function ProjectBar() {
   const { project, dirty, remoteId, setProject, setProjectName, setRemoteId, markSaved } = useStore();
@@ -18,6 +19,8 @@ export function ProjectBar() {
   const [showRender, setShowRender] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showHelp, setShowHelp] = useState(() => !localStorage.getItem('helpSeen'));
+  useEffect(() => { if (!showHelp) localStorage.setItem('helpSeen', '1'); }, [showHelp]);
 
   const refresh = async () => {
     if (!api.isLoggedIn()) return;
@@ -105,6 +108,7 @@ export function ProjectBar() {
       </div>
       <button className="primary" onClick={() => setShowRender(true)}>Render image</button>
       <button onClick={() => setShowShare(true)}>Phone / AR</button>
+      <button onClick={() => setShowHelp(true)} title="How to use">? Help</button>
       <span className="spacer" />
       {loggedIn ? (
         <>
@@ -129,6 +133,7 @@ export function ProjectBar() {
       {showRender && <RenderDialog onClose={() => setShowRender(false)} />}
       {showShare && <ShareDialog onClose={() => setShowShare(false)} />}
       {showImport && <ImportPlanDialog onClose={() => setShowImport(false)} />}
+      {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
     </header>
   );
 }

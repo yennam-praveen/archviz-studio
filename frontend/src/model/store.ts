@@ -29,6 +29,9 @@ interface State {
   remoteId: string | null; // id on the backend, once saved
   viewMode: ViewMode;
   underlay: Underlay | null;
+  /** Incremented by "Fit view"; the 3D scene reframes the whole building when it changes. */
+  fitRequest: number;
+  fitView(): void;
 
   level(): Level;
   setUnderlay(u: Underlay | null): void;
@@ -129,6 +132,8 @@ export const useStore = create<State>((set, get) => {
     remoteId: null,
     viewMode: 'orbit',
     underlay: null,
+    fitRequest: 0,
+    fitView: () => set((s) => ({ fitRequest: s.fitRequest + 1, viewMode: 'orbit' })),
 
     setUnderlay: (underlay) => set({ underlay }),
     updateUnderlay: (patch) => set((s) => (s.underlay ? { underlay: { ...s.underlay, ...patch } } : {})),

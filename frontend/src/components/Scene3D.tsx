@@ -166,13 +166,45 @@ function CameraRegistrar() {
   return null;
 }
 
+/** Bounds of every level's walls in plan space. */
+function projectBounds(levels: Level[]) {
+  let box: ReturnType<typeof levelBounds> = null;
+  for (const l of levels) {
+    const b = levelBounds(l);
+    if (!b) continue;
+    box = box
+      ? { x0: Math.min(box.x0, b.x0), x1: Math.max(box.x1, b.x1), y0: Math.min(box.y0, b.y0), y1: Math.max(box.y1, b.y1) }
+      : { ...b };
+  }
+  return box;
+}
+
 function OrbitSetup() {
   const project = useStore((s) => s.project);
-  const target = useMemo<[number, number, number]>(() => {
-    const b = levelBounds(project.levels[0]);
-    return b ? [(b.x0 + b.x1) / 2, 1, -(b.y0 + b.y1) / 2] : [0, 1, 0];
+  const fitRequest = useStore((s) => s.fitRequest);
+  const { camera } = useThree();
+  const controls = useRef<React.ComponentRef<typeof OrbitControls>>(null);
+  const frame = useMemo(() => {
+    const b = projectBounds(project.levels);
+    const top = project.levels.reduce((h, l) => Math.max(h, l.elevation + l.height), 3);
+    const target: [number, number, number] = b ? [(b.x0 + b.x1) / 2, top / 2, -(b.y0 + b.y1) / 2] : [0, 1, 0];
+    const size = b ? Math.max(b.x1 - b.x0, b.y1 - b.y0, top, 8) : 8;
+    return { target, size };
   }, [project.levels]);
-  return <OrbitControls makeDefault target={target} maxPolarAngle={Math.PI / 2 - 0.02} />;
+
+  // On mount (also when coming back from walk mode, where the camera is inside the building)
+  // and on every "Fit view" request: frame the whole building.
+  useEffect(() => {
+    const [tx, ty, tz] = frame.target;
+    const d = frame.size * 1.6;
+    camera.position.set(tx + d, d * 0.7, tz + d);
+    controls.current?.target.set(tx, ty, tz);
+    camera.lookAt(tx, ty, tz);
+    controls.current?.update();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitRequest]);
+
+  return <OrbitControls ref={controls} makeDefault maxPolarAngle={Math.PI / 2 - 0.02} />;
 }
 
 export function Scene3D() {

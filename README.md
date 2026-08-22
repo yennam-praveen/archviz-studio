@@ -114,6 +114,13 @@ position controls in the panel) so the architect can line it up and correct any 
   a few walls on hand sketches or low-resolution photos. Curved walls are not supported by the data model.
 - Tested with a stubbed model in `backend/tests/test_plan_import.py`; the live call was not exercised in this repo.
 
+## Help video
+
+*? Help* in the toolbar (opens automatically on first visit) plays an 85-second walkthrough of the app,
+`frontend/public/tutorial/how-to-use.mp4`, with a written step list underneath. The video is a real screen
+recording produced by `frontend/scripts/record-tutorial.mjs` (Playwright drives the live app and burns in
+captions). To re-record after UI changes: start the dev server and backend, then `node scripts/record-tutorial.mjs`.
+
 ## Hosting
 
 - **Frontend**: GitHub Pages via `.github/workflows/pages.yml` → https://yennam-praveen.github.io/archviz-studio/

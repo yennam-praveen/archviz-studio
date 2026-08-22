@@ -80,7 +80,7 @@ button.danger { color: var(--danger); }
 .modal .row { align-items: flex-end; }
 .progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
 .progress > div { height: 100%; background: var(--accent); transition: width .2s; }
-.render-preview { width: 100%; border-radius: 4px; background: #000; }
+.render-preview { display: block; max-width: 100%; max-height: min(62vh, 900px); margin: 0 auto; object-fit: contain; border-radius: 4px; background: #000; }
 
 /* Phone / AR viewer */
 .ar-page { display: flex; flex-direction: column; height: 100%; }
@@ -110,3 +110,10 @@ textarea { background: #272b34; color: var(--text); border: 1px solid var(--line
 .conf.high { background: #1f4d2a; color: #8fe0a0; } .conf.medium { background: #4d3f1f; color: #ffd27f; } .conf.low { background: #4d1f1f; color: #ff9d9d; }
 .warn-list { margin: 0; padding-left: 18px; color: var(--accent); }
 @media (max-width: 800px) { .import-grid { grid-template-columns: 1fr; } }
+
+/* Help / tutorial */
+.modal.help { width: min(960px, 94vw); }
+.help-video { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; }
+.help-steps { margin: 0; padding-left: 22px; columns: 2; column-gap: 24px; line-height: 1.5; color: var(--muted); }
+.help-steps b { color: var(--text); }
+@media (max-width: 800px) { .help-steps { columns: 1; } }
