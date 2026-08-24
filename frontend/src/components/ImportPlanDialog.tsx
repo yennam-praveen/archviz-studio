@@ -45,6 +45,15 @@ export function ImportPlanDialog({ onClose }: { onClose(): void }) {
     }
   };
 
+  // No AI, no server, no API key: drop the plan straight in as an underlay and let the architect
+  // trace walls by hand with the normal wall tool. Width/origin can be fine-tuned afterwards in the
+  // Dimensions panel ("Plan underlay") once a known wall length gives an exact scale.
+  const traceManually = () => {
+    if (!file || file.type === 'application/pdf') return;
+    setUnderlay({ url: URL.createObjectURL(file), widthM: parseFloat(widthM) || 12, opacity: 0.45, origin: [0, 0] });
+    onClose();
+  };
+
   const apply = () => {
     if (!result) return;
     const project = migrate(structuredClone(result.project));
@@ -97,9 +106,19 @@ export function ImportPlanDialog({ onClose }: { onClose(): void }) {
             <label className="field"><span>Notes for the analysis (optional)</span>
               <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g. dimensions are in mm; ignore the garage; two storeys" /></label>
-            <button className="primary" disabled={!file || busy} onClick={analyse}>
-              {busy ? 'Analysing plan… (20–90 s)' : 'Analyse plan'}
-            </button>
+            <div className="row">
+              <button className="primary" disabled={!file || busy} onClick={analyse}>
+                {busy ? 'Analysing plan… (20–90 s)' : 'Analyse plan (AI)'}
+              </button>
+              <button disabled={!file || busy || file?.type === 'application/pdf'} onClick={traceManually}>
+                Skip AI — trace manually
+              </button>
+            </div>
+            <p className="hint">
+              "Analyse plan" needs a Claude API key set up on the server. No key? Use <b>Skip AI — trace manually</b>
+              instead — the plan drops in as a reference image and you draw walls over it by hand (works for images, not PDF).
+              Fine-tune its size and position afterwards in the Dimensions panel under "Plan underlay".
+            </p>
             {error && <p className="warn">{error}</p>}
 
             {result && (
