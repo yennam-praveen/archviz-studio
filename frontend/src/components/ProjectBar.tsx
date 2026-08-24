@@ -8,6 +8,7 @@ import { RenderDialog } from './RenderDialog';
 import { ShareDialog } from './ShareDialog';
 import { ImportPlanDialog } from './ImportPlanDialog';
 import { HelpDialog } from './HelpDialog';
+import { D5ExportDialog } from './D5ExportDialog';
 
 export function ProjectBar({ compact = false }: { compact?: boolean }) {
   const { project, dirty, remoteId, setProject, setProjectName, setRemoteId, markSaved } = useStore();
@@ -19,6 +20,7 @@ export function ProjectBar({ compact = false }: { compact?: boolean }) {
   const [showRender, setShowRender] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showD5, setShowD5] = useState(false);
   const [showHelp, setShowHelp] = useState(() => !localStorage.getItem('helpSeen'));
   useEffect(() => { if (!showHelp) localStorage.setItem('helpSeen', '1'); }, [showHelp]);
 
@@ -97,6 +99,7 @@ export function ProjectBar({ compact = false }: { compact?: boolean }) {
         <button>Export ▾</button>
         <div className="menu-items">
           <button onClick={run('glTF export', () => exportGLB(project))}>3D model (.glb) — Blender, Twinmotion</button>
+          <button onClick={() => setShowD5(true)}>Send to D5 Render…</button>
           <button onClick={run('USDZ export', () => exportUSDZ(project))}>iPhone AR (.usdz)</button>
           <button onClick={run('PDF export', () => exportPlanPDF(project))}>Plan drawings (.pdf)</button>
           <button onClick={exportJson}>Project file (.json)</button>
@@ -146,6 +149,7 @@ export function ProjectBar({ compact = false }: { compact?: boolean }) {
       {showRender && <RenderDialog onClose={() => setShowRender(false)} />}
       {showShare && <ShareDialog onClose={() => setShowShare(false)} />}
       {showImport && <ImportPlanDialog onClose={() => setShowImport(false)} />}
+      {showD5 && <D5ExportDialog onClose={() => setShowD5(false)} />}
       {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
     </header>
   );

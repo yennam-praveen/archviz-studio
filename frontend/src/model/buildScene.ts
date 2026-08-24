@@ -49,7 +49,9 @@ export function buildScene(project: Project, opts: { ground?: boolean } = {}): B
     let m = materials.get(k);
     if (!m) {
       const p = preset(k, fallback);
-      m = new THREE.MeshStandardMaterial({ color: p.color, roughness: p.roughness, metalness: p.metalness, name: k });
+      // Human-readable name (e.g. "Red brick") so external tools like D5 Render / Blender show
+      // a sensible material list, not raw preset keys like "brick".
+      m = new THREE.MeshStandardMaterial({ color: p.color, roughness: p.roughness, metalness: p.metalness, name: p.label });
       materials.set(k, m);
     }
     return m;

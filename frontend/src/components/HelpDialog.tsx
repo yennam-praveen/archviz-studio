@@ -5,7 +5,7 @@ const STEPS = [
   ['Sun study', 'Drag time and month; set latitude and north offset for your site to get real shadows.'],
   ['Walk inside', 'First-person view at eye height: click the 3D view, WASD to move, Esc to release.'],
   ['Render image', 'Fast preview in seconds on any PC, or a photoreal path-traced render on a desktop GPU.'],
-  ['Export', '.glb for Blender/Twinmotion, .usdz for iPhone AR, dimensioned A3 PDF plans, or the project file.'],
+  ['Export', '.glb for Blender/Twinmotion, "Send to D5 Render" for a guided D5 import, .usdz for iPhone AR, dimensioned A3 PDF plans, or the project file.'],
   ['Import plan', 'Upload a scan or photo of a floor plan; walls and openings are extracted automatically for you to check.'],
   ['Phone / AR', 'Save, then scan the QR with an Android phone to place the building on a table or 1:1 on site.'],
 ];

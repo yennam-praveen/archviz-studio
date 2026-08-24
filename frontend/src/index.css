@@ -111,6 +111,12 @@ textarea { background: #272b34; color: var(--text); border: 1px solid var(--line
 .warn-list { margin: 0; padding-left: 18px; color: var(--accent); }
 @media (max-width: 800px) { .import-grid { grid-template-columns: 1fr; } }
 
+/* D5 Render export dialog */
+.modal.d5 { width: min(560px, 92vw); }
+.d5-steps { columns: 1; }
+.d5-materials { border-top: 1px solid var(--line); padding-top: 8px; }
+.d5-materials h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
 /* Help / tutorial */
 .modal.help { width: min(960px, 94vw); }
 .help-video { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; }
@@ -145,7 +151,7 @@ textarea { background: #272b34; color: var(--text); border: 1px solid var(--line
   input[type=range] { min-height: 0; }
   .modal-backdrop { align-items: stretch; }
   .modal { width: 100vw; max-height: none; height: 100dvh; border-radius: 0; border: none; }
-  .modal.share, .modal.import, .modal.help { width: 100vw; }
+  .modal.share, .modal.import, .modal.help, .modal.d5 { width: 100vw; }
   .help-steps { columns: 1; }
   .grid2 { grid-template-columns: 1fr 1fr; }
   .plan2d { touch-action: none; }

@@ -5,7 +5,7 @@ import type { Project } from '../model/types';
 import { buildScene } from '../model/buildScene';
 import { downloadBlob, safeName } from './download';
 
-/** Binary glTF — opens in Blender, Twinmotion, SketchUp, Revit (via plugin), three.js. */
+/** Binary glTF — opens in Blender, Twinmotion, D5 Render, SketchUp, Revit (via plugin), three.js. */
 export async function exportGLB(project: Project) {
   const built = buildScene(project);
   try {
